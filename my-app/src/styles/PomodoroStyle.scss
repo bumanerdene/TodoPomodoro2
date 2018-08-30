@@ -1,0 +1,28 @@
+.Pomodoro{
+display: grid;
+width: 100%;
+text-align: center;
+}
+#controlTime{
+  display: grid;
+  grid-gap: 2em;
+  grid-template-columns: repeat(2, auto);
+}
+.eachSection{
+  width: 60%;
+  margin: auto;
+  display: grid;
+  text-align: center;
+  grid-template-columns: repeat(3, auto);
+}
+#control-btns{
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: 60px;
+  grid-gap: 3em;
+  button{
+  width: 70%;
+  height: 100%;
+  margin: auto;
+  }
+}

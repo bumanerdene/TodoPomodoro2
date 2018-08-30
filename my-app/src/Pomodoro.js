@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './PomodoroStyle.scss';
+import './styles/PomodoroStyle.scss';
 let timeInterval;
 const remind={
   color: 'red'
@@ -7,7 +7,7 @@ const remind={
 const cont={
 
 }
-class Pomodoro extends Component {
+class Pomodoro extends Component{
   constructor(props) {
     super(props);
     this.state = {
@@ -17,7 +17,16 @@ class Pomodoro extends Component {
       second: 0,
       working: false,
       sessionTime: true,
-      breakTime: false
+      firstTodo: true,
+      breakTime: false,
+      /*todo is controlling session time showing or hiding*/
+      todo: false,
+      nowGoingKey: '',
+      nowGoingName:'',
+      todoInPomodoro:{
+        "list":[]
+      }
+
     };
     this.secondCalculate = this.secondCalculate.bind(this);
     this.minuteCalculate = this.minuteCalculate.bind(this);
@@ -99,6 +108,7 @@ class Pomodoro extends Component {
     if (second == 0 && minute == 0) {
       this.audio.play();
       this.audio.currentTime = 7;
+      if(this.state.todo){
       if(this.state.sessionTime){
         this.setState({
           sessionTime: false,
@@ -107,7 +117,7 @@ class Pomodoro extends Component {
           second: 0
         })
       }
-      else {
+      else{
          this.setState({
           sessionTime: true,
           breakTime: false,
@@ -116,6 +126,29 @@ class Pomodoro extends Component {
         })
       }
     }
+      else{
+        /*If currently breakTime end next must to continue list*/
+        if(!breakTime){
+          const keyList = this.state.nowGoingKey + 1;
+          this.setState({
+            breakTime: true,
+            minute: this.state.todoInPomodoro.list[keyList-1].minute,
+            nowGoingKey: keyList,
+            nowGoingName:this.state.todoInPomodoro.list[keyList-1].name
+          })
+        }
+        /*If currently ListTime end next must to continue breakTime*/
+        else{
+          this.setState({
+            breakTime: false,
+            minute: this.state.breakVal,
+            nowGoingName: 'BreakTime'
+          })
+        }
+
+      }
+    }
+
     else{
     if (second == 0 && minute > 0) {
       minute = minute - 1;
@@ -139,39 +172,87 @@ class Pomodoro extends Component {
       timeInterval = setInterval(this.continueTime, 1000);
     }
   }
+componentWillReceiveProps(nextProps){
+  {/*When Component recieve props from App.js
+    IF it's equal to null code will undestand delete all the lists
+    */}
+  if(nextProps.todolist== null){
+    this.setState({
+      todoInPomodoro: {
+        "list":[],
+      },
+      todo: false,
+      firstTodo: true
+    });
+  }
+  /*When Component recieve props from App.js
+    IF it's not equal to prevState it must to add this props to my state
+    */
+  else if(nextProps.todolist !== this.props.todolist){
+    this.state.todoInPomodoro.list.push(nextProps.todolist);
+    /*In below if statement invoke 1 time because of state firstTodo never change another function*/
+    if(this.state.firstTodo){
+      this.setState({
+      minute: this.state.todoInPomodoro.list[0].minute,
+      nowGoingName:this.state.todoInPomodoro.list[0].name,
+      nowGoingKey:1,
+      firstTodo: false,
+      todo: true,
+    })
+    }
+  }
+  /*When Component recieve props from App.js
+    IF it's faced to another case can't add yet
+    */
+  else console.log('nothing to add!');
+
+}
+
   render() {
+    const len = this.state.todoInPomodoro.list.length;
+
     return (
       <div className="Pomodoro">
         <audio id='beep' src='http://www.orangefreesounds.com/wp-content/uploads/2015/04/Loud-alarm-clock-sound.mp3' ref={(audio) => { this.audio = audio}}
         />
-        <h3 id="title">Pomodoro Clock</h3>
-        {/* Break/Session controlling */}
+      <h3 id="title">Pomodoro Clock</h3>
+      {len!=0 ? `You have ${len} task todo!`: null}
+       {/* Break/Session controlling */}
         <div id="controlTime">
           <div className="break">
             <h5 id="break-label">Break Length</h5>
-            <p id="break-length">{this.state.breakVal}</p>
+            <div className='eachSection'>
             <button id="break-increment" onClick={() => this.breakClicked("+")}>
               +
             </button>
+            <p id="break-length">{this.state.breakVal}</p>
             <button id="break-decrement" onClick={() => this.breakClicked("-")}>
               -
             </button>
+            </div>
           </div>
           <div className="session">
             <h5 id="session-label">Session Length</h5>
-            <p id="session-length">{this.state.sessionVal}</p>
-            <button
-              id="session-increment"
-              onClick={() => this.sessionClicked("+")}
-            >
-              +
-            </button>
-            <button
-              id="session-decrement"
-              onClick={() => this.sessionClicked("-")}
-            >
-              -
-            </button>
+            {/*If user use todo section we don't need to controlling section timer*/}
+            {!this.state.todo ?
+              <div className='eachSection'>
+                        <button
+                          id="session-increment"
+                          onClick={() => this.sessionClicked("+")}
+                        >
+                          +
+                        </button>
+                          <p id="session-length">{this.state.sessionVal}</p>
+                        <button
+                          id="session-decrement"
+                          onClick={() => this.sessionClicked("-")}
+                        >
+                          -
+                        </button>
+                      </div>:
+                      <div>{this.state.nowGoingName}</div>
+            }
+
           </div>
         </div>
         {/* Time controlling */}

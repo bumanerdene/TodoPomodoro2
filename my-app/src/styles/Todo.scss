@@ -1,0 +1,20 @@
+.TodoBody{
+  display: grid;
+  grid-template-rows: 80% 10% auto;
+  grid-row-gap: 1em;
+}
+.addList{
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-column-gap: 0.2em;
+}
+.listBody{
+  display: grid;
+  overflow-y: auto;
+}
+input{
+  height: 30px;
+}
+.addlistBtn{
+  height: 30px;
+}
